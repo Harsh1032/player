@@ -5,6 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Form = () => {
+  const baseURL = process.env.REACT_APP_BASE_URL;
+
   const [name, setName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -87,7 +89,7 @@ const Form = () => {
     };
 
     try {
-      const response = await fetch(`${BASE_URL}/generate1` , {
+      const response = await fetch(`${baseURL}/generate1` , {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +112,7 @@ const Form = () => {
 
   const submitBulkData = async (videos) => {
     try {
-      const response = await fetch(`${BASE_URL}/generate-bulk`, {
+      const response = await fetch(`${baseURL}/generate-bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

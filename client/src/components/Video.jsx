@@ -5,11 +5,12 @@ import VideoData from './VideoData';
 const Video = () => {
   const { id } = useParams();
   const [formData, setFormData] = useState(null);
-
+  const baseURL = process.env.REACT_APP_BASE_URL;
+  
   useEffect(() => {
     const fetchVideoData = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/video/${id}`);
+        const response = await fetch(`${baseURL}/video/${id}`);
         if (!response.ok) {
           throw new Error('Video not found');
         }
