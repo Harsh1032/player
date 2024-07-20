@@ -87,7 +87,7 @@ const Form = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8000/generate", {
+      const response = await fetch(`${BASE_URL}/generate1` , {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +110,7 @@ const Form = () => {
 
   const submitBulkData = async (videos) => {
     try {
-      const response = await fetch("http://localhost:8000/generate-bulk", {
+      const response = await fetch(`${BASE_URL}/generate-bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

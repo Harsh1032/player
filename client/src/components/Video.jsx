@@ -9,7 +9,7 @@ const Video = () => {
   useEffect(() => {
     const fetchVideoData = async () => {
       try {
-        const response = await fetch(`https://fake-video-player.vercel.app/video/${id}`);
+        const response = await fetch(`${BASE_URL}/video/${id}`);
         if (!response.ok) {
           throw new Error('Video not found');
         }
