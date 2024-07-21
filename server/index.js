@@ -20,8 +20,10 @@ mongoose.connect(mongoURL)
 
 const __dirname =path.resolve();
 
+const baseURL = process.env.BASE_URL;
+
 app.use(express.json());
-app.use(cors());
+app.use(cors({origin: baseURL}));
 
 // Define video schema
 const videoSchema = new mongoose.Schema({
@@ -39,8 +41,6 @@ const Video = mongoose.model('Video', videoSchema);
 app.get('/', (req, res) => {
     res.json("Hello");
 });
-
-const baseURL = process.env.BASE_URL;
 
 // Generate unique video link
 app.post('/generate', async (req, res) => {
