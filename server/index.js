@@ -79,9 +79,10 @@ app.get('/video/:id', async (req, res) => {
 });
 
 
-app.use(express.static(path.join(__dirname, '/client/dist')));
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
 // Running the server on port 8000
