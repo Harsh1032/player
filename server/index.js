@@ -3,7 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { nanoid } from 'nanoid';
 import cors from 'cors';
-
+import path from 'path';
 const app = express();
 
 // Build the MongoDB URL with TLS/SSL options
@@ -16,6 +16,9 @@ mongoose.set('debug', true);
 mongoose.connect(mongoURL)
   .then(() => console.log("database connected"))
   .catch((err) => console.log('database not connected', err));
+
+
+const __dirname =path.resolve();
 
 app.use(express.json());
 app.use(cors());
@@ -73,6 +76,12 @@ app.get('/video/:id', async (req, res) => {
     } else {
         res.status(404).json({ error: 'Video not found' });
     }
+});
+
+
+app.use(express.static(path.join(__dirname, '/client/dist')));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
 // Running the server on port 8000
