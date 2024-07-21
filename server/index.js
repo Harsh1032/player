@@ -37,12 +37,14 @@ app.get('/', (req, res) => {
     res.json("Hello");
 });
 
+const baseURL = process.env.BASE_URL;
+
 // Generate unique video link
 app.post('/generate', async (req, res) => {
     const { name, websiteUrl, videoUrl, timeFullScreen, videoDuration } = req.body;
     const newVideo = new Video({ name, websiteUrl, videoUrl, timeFullScreen, videoDuration });
     await newVideo.save();
-    res.json({ link: `https://player-fronten.onrender.com/video/${newVideo.id}` });
+    res.json({ link: `${baseURL}/video/${newVideo.id}` });
 });
 
 // Route to handle bulk generation
@@ -56,13 +58,11 @@ app.post('/generate-bulk', async (req, res) => {
         const { name, websiteUrl, videoUrl, timeFullScreen, videoDuration } = video;
         const newVideo = new Video({ name, websiteUrl, videoUrl, timeFullScreen, videoDuration });
         await newVideo.save();
-        return `https://player-fronten.onrender.com/video/${newVideo.id}`;
+        return `${baseURL}/video/${newVideo.id}`;
     }));
 
     res.json({ links: generatedLinks });
 });
-
-//https://player-fronten.onrender.com
 
 // Retrieve video data by ID
 app.get('/video/:id', async (req, res) => {

@@ -312,8 +312,8 @@ const VideoData = ({
               className={` ${
                 isVideoFull
                   ? "full-video-container"
-                  : "absolute xs:bottom-5 bottom-12 left-6 overflow-hidden border-2 border-white w-[17%] h-[27%] rounded-full"
-              }`}
+                  : "absolute xs:bottom-5 bottom-12 left-6 overflow-hidden border-2 border-white  rounded-full"
+              }  ${ isFullScreen ? "  xs:w-[100px] xs:h-[100px] sm:w-[125px] sm:h-[125px] lg:w-[190px] lg:h-[190px] xl:w-[220px] xl:h-[220px]" : "xs:w-[80px] xs:h-[80px] sm:w-[105px] sm:h-[105px] lg:w-[120px] lg:h-[120px] xl:w-[170px] xl:h-[170px]"}`}
             >
               <video
                 ref={videoRef}

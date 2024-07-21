@@ -4,10 +4,11 @@
     /* max-width: 820px; */
     /* aspect-ratio: 16 / 10; */
     display: flex;
-    /* justify-content: center; */
+    justify-content: center;
     overflow: hidden;
     border-radius: 1rem; /* 1rem is equivalent to 16px (rounded-xl in Tailwind) */
     margin-inline: auto;
+    
   }
   
   .full-screen-img {
