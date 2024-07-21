@@ -42,7 +42,7 @@ app.post('/generate', async (req, res) => {
     const { name, websiteUrl, videoUrl, timeFullScreen, videoDuration } = req.body;
     const newVideo = new Video({ name, websiteUrl, videoUrl, timeFullScreen, videoDuration });
     await newVideo.save();
-    res.json({ link: `${process.env.BASE_URL}/video/${newVideo.id}` });
+    res.json({ link: `https://player-fronten.onrender.com/video/${newVideo.id}` });
 });
 
 // Route to handle bulk generation
