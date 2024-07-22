@@ -89,7 +89,6 @@ const Form = () => {
     };
 
     try {
-  const baseURL = process.env.REACT_APP_BASE_URL;
       const response = await fetch(`${baseURL}/generate` , {
         method: "POST",
         headers: {

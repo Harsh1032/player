@@ -21,9 +21,12 @@ const Video = () => {
       }
     };
 
+
+
     fetchVideoData();
   }, [id]);
 
+  console.log(formData);
   return (
     <div>
       {formData ? (

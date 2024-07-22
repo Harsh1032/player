@@ -291,12 +291,11 @@ const VideoData = ({
         </span>
       </div>
       <div className="flex xs:flex-col h-[90%] w-[90%] xs:mb-5 md:flex-row items-center justify-center">
-        {/* <div className="bg-slate-400 flex flex-col xs:w-[100%] items-center pt-8 md:h-[100%] md:w-[60%] xs:h-[50%]"> */}
-        <div className="flex flex-col items-center justify-center md:w-[60%] md:h-[100%] xs:w-[100%] xs:h-[60%] bg-slate-400 xs:pt-2">
+        <div className="flex flex-col items-center justify-center md:w-[60%] md:h-[100%] xs:w-[100%] xs:h-[60%] bg-slate-400 xs:pt-2 md:ml-5">
           <div
             className={`video-container paused ${
               isFullScreen ? "full-screen" : ""
-            } md:w-[85%] md:h-[75%] xs:h-[80%] xs:w-[100%] `}
+            } md:w-[85%] md:h-[75%] xs:h-[80%] xs:w-[100%] xl:w-[90%]`}
             data-volume-level="high"
             ref={videoContainerRef}
           >
@@ -449,7 +448,7 @@ const VideoData = ({
               </>
             )}
           </div>
-          <div className="flex items-center justify-center xs:w-[100%] md:w-[85%] md:mt-[5%] xs:mt-3 z-1">
+          <div className="flex items-center justify-center xs:w-[100%] md:w-[85%] xl:w-[95%] md:mt-[5%] xs:mt-3 z-1">
             <div className="md:w-[100%] flex justify-between items-center xs:w-[100%]">
               <img
                 src={Logo}
@@ -464,8 +463,6 @@ const VideoData = ({
             </div>
           </div>
         </div>
-
-        {/* </div> */}
         <div className="xs:flex xs:items-center xs:justify-center xs:w-[100%] xs:mt-5 xs:h-[400px] md:h-[90%] md:w-[34%] xl:h-[95%] object-contain overflow-y-scroll no-scrollbar">
           <div className="md:w-[80%] xs:w-[100%] xs:h-[100%] overflow-y-scroll no-scrollbar xs:flex xs:items-center xs:justify-center">
             <Cal
