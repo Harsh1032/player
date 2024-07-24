@@ -19,6 +19,7 @@
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.1",
     "nanoid": "^5.0.7",
+    "papaparse": "^5.4.1",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

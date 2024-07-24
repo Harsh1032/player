@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import "./CustomVideoPlayer.css";
 import Logo from "../assets/logo.png";
 import Cal, { getCalApi } from "@calcom/embed-react";
@@ -284,7 +284,17 @@ const VideoData = ({
   };
 
   return (
-    <div className="flex flex-col w-full h-screen bg-slate-400 justify-center items-center overflow-y-scroll no-scrollbar">
+    <div className="flex flex-col w-full h-full bg-slate-400 justify-center items-center overflow-y-scroll no-scrollbar">
+      <Helmet>
+        <title>Video for {name}</title>
+        <meta property="og:title" content={`Video for ${name}`} />
+        <meta
+          property="og:description"
+          content={`Check out this personalized video for ${name}.`}
+        />
+        <meta property="og:image" content={window.location.href} />
+        <meta property="og:url" content={window.location.href} />
+      </Helmet>
       <div className="h-[10%] flex flex-col w-full text-center justify-end">
         <span className="xs:text-base md:text-2xl xl:text-4xl h-full xs:w-full font-bold pt-9 z-10">
           Vidéo à l'attention de Denis {name}
@@ -295,7 +305,7 @@ const VideoData = ({
           <div
             className={`video-container paused ${
               isFullScreen ? "full-screen" : ""
-            } md:w-[85%] md:h-[75%] xs:h-[80%] xs:w-[100%] xl:w-[90%]`}
+            } md:w-[85%] md:h-[75%] xs:h-[80%] xs:w-[100%] xl:w-[95%]`}
             data-volume-level="high"
             ref={videoContainerRef}
           >
@@ -312,7 +322,11 @@ const VideoData = ({
                 isVideoFull
                   ? "full-video-container"
                   : "absolute xs:bottom-5 bottom-12 left-6 overflow-hidden border-2 border-white  rounded-full"
-              }  ${ isFullScreen ? "  xs:w-[100px] xs:h-[100px] sm:w-[125px] sm:h-[125px] lg:w-[190px] lg:h-[190px] xl:w-[220px] xl:h-[220px]" : "xs:w-[80px] xs:h-[80px] sm:w-[105px] sm:h-[105px] lg:w-[120px] lg:h-[120px] xl:w-[170px] xl:h-[170px]"}`}
+              }  ${
+                isFullScreen
+                  ? "  xs:w-[100px] xs:h-[100px] sm:w-[125px] sm:h-[125px] lg:w-[190px] lg:h-[190px] xl:w-[220px] xl:h-[220px]"
+                  : "xs:w-[80px] xs:h-[80px] sm:w-[105px] sm:h-[105px] lg:w-[120px] lg:h-[120px] xl:w-[170px] xl:h-[170px]"
+              }`}
             >
               <video
                 ref={videoRef}
@@ -452,7 +466,7 @@ const VideoData = ({
             <div className="md:w-[100%] flex justify-between items-center xs:w-[100%]">
               <img
                 src={Logo}
-                className="md:w-[25%] md:max-h-[20%] xs:w-[80px] xs:h-[40px]"
+                className="md:w-[25%] md:max-h-[20%] xl:max-h-[30%] xs:w-[80px] xs:h-[40px]"
               />
               <button
                 onClick={handleClick}

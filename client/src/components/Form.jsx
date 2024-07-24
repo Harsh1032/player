@@ -1,8 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Papa from "papaparse";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FaTrashAlt, FaHistory } from "react-icons/fa";
 
 const Form = () => {
   const baseURL = process.env.REACT_APP_BASE_URL;
@@ -16,9 +17,72 @@ const Form = () => {
   const [mode, setMode] = useState("single"); // State to manage form mode
   const [csvFile, setCsvFile] = useState(null); // State to manage CSV file
 
+  const [csvFiles, setCsvFiles] = useState([]);
+  const [showCsvDropdown, setShowCsvDropdown] = useState(false);
+
+  const [videos, setVideos] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchVideos();
+    fetchCsvFiles();
+  }, []);
+
+  const fetchCsvFiles = async () => {
+    try {
+      const response = await fetch(`${baseURL}/csv-files`);
+      const data = await response.json();
+      if (response.ok) {
+        setCsvFiles(data);
+      } else {
+        console.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching CSV files:", error);
+    }
+  };
+
+  console.log(csvFiles);
+  // for fetching videos
+  const fetchVideos = async () => {
+    try {
+      const response = await fetch(`${baseURL}/videos`);
+      const data = await response.json();
+      if (response.ok) {
+        setVideos(data);
+      } else {
+        console.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+    }
+  };
+
+  // for deleting videos
+  const deleteVideo = async (id) => {
+    try {
+      const response = await fetch(`${baseURL}/video/${id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Video deleted successfully.");
+        // Remove the deleted video from the local state
+        setVideos((prevVideos) =>
+          prevVideos.filter((video) => video.id !== id)
+        );
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      toast.error("An error occurred while deleting the video.");
+    }
+  };
 
   const handleSubmission = async (e) => {
     e.preventDefault();
@@ -35,8 +99,9 @@ const Form = () => {
         complete: async (results) => {
           console.log("CSV Parsed Results: ", results); // Debugging line
 
-          const validRows = results.data.filter(row => 
-            row.name && row.websiteUrl && row.videoUrl && row.timeFullScreen
+          const validRows = results.data.filter(
+            (row) =>
+              row.name && row.websiteUrl && row.videoUrl && row.timeFullScreen
           );
 
           const videos = validRows.map((row) => ({
@@ -55,7 +120,7 @@ const Form = () => {
           console.log("Videos to Submit: ", videos); // Debugging line
 
           // Submit bulk data
-          await submitBulkData(videos);
+          await submitBulkData(videos, csvFile.name);
 
           setCsvFile(null); // Clear the csvFile state
           if (fileInputRef.current) {
@@ -89,7 +154,7 @@ const Form = () => {
     };
 
     try {
-      const response = await fetch(`${baseURL}/generate` , {
+      const response = await fetch(`${baseURL}/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,8 +164,10 @@ const Form = () => {
 
       const data = await response.json();
       if (response.ok) {
-        const videoId = data.link.split('/').pop();
+        const videoId = data.link.split("/").pop();
         navigate(`/video/${videoId}`);
+        // Fetch videos after submission
+        fetchVideos();
       } else {
         toast.error(`${data.error}`);
       }
@@ -110,20 +177,24 @@ const Form = () => {
     }
   };
 
-  const submitBulkData = async (videos) => {
+  const submitBulkData = async (videos, originalFileName) => {
     try {
       const response = await fetch(`${baseURL}/generate-bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ videos }),
+        body: JSON.stringify({ videos, originalFileName }),
       });
 
       const data = await response.json();
       if (response.ok) {
         toast.success("Templates successfully generated");
         generateDownloadableFile(data.links, videos);
+        // Fetch videos after submission
+        fetchVideos();
+        // Fetch CSV files after bulk submission
+        fetchCsvFiles();
       } else {
         toast.error(`${data.error}`);
       }
@@ -150,11 +221,11 @@ const Form = () => {
     }));
 
     const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'generated_videos.csv';
+    a.download = "generated_videos.csv";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -167,8 +238,41 @@ const Form = () => {
   };
 
   const handleModeSwitch = () => {
-    console.log(`Switching mode from ${mode} to ${mode === "single" ? "bulk" : "single"}`);
+    console.log(
+      `Switching mode from ${mode} to ${mode === "single" ? "bulk" : "single"}`
+    );
     setMode(mode === "single" ? "bulk" : "single");
+  };
+
+  const renderVideos = (videoList) => {
+    return videoList.map((video, index) => (
+      <li key={video.id} className="flex items-center justify-between p-2">
+        <span>{video.name}</span>
+        <button
+          onClick={() => deleteVideo(video.id)}
+          className="p-1 bg-red-500 hover:bg-red-400 text-white rounded"
+        >
+          <FaTrashAlt />
+        </button>
+      </li>
+    ));
+  };
+
+  const renderCsvFiles = (csvFileList) => {
+    return csvFileList.map((file, index) => (
+      <li key={index} className="flex items-center justify-between p-2">
+        <span>{file.fileName}</span>
+        <span>{file.numberOfPages}</span>
+        <span>{new Date(file.generatedAt).toLocaleDateString()}</span>
+        <a
+          href={`${baseURL}${file.downloadLink}`}
+          className="p-1 bg-blue-500 hover:bg-blue-400 text-white rounded"
+          download
+        >
+          Download
+        </a>
+      </li>
+    ));
   };
 
   return (
@@ -244,13 +348,59 @@ const Form = () => {
             </button>
           </>
         )}
-        
-      <ToastContainer />
+
+        <ToastContainer />
       </form>
+
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="relative z-10 p-2 bg-gray-600 hover:bg-gray-500 text-white rounded-full"
+        >
+          <FaTrashAlt />
+        </button>
+        <button
+          onClick={() => setShowCsvDropdown(!showCsvDropdown)}
+          className="relative z-10 p-2 bg-gray-600 hover:bg-gray-500 text-white rounded-full ml-2"
+        >
+          <FaHistory />
+        </button>
+
+        {showDropdown && (
+          <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-64 overflow-y-scroll no-scrollbar">
+            <ul className="divide-y divide-gray-200">{renderVideos(videos)}</ul>
+            {videos.length <= 0 && (
+              <div className="flex justify-center p-2">
+                <span className="text-xl font-semibold">
+                  No video generated
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {showCsvDropdown && (
+          <div className="absolute right-0 mt-2 w-80 max-w-xs bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-64 overflow-y-scroll no-scrollbar">
+            <ul className="divide-y divide-gray-200">
+              {renderCsvFiles(csvFiles)}
+            </ul>
+            {csvFiles.length <= 0 && (
+              <div className="flex justify-center p-2">
+                <span className="text-xl font-semibold">
+                  No CSV files generated
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <video
         ref={videoRef}
         style={{ display: "none" }}
-        onLoadedMetadata={(e) => setVideoDuration(Math.floor(e.target.duration))}
+        onLoadedMetadata={(e) =>
+          setVideoDuration(Math.floor(e.target.duration))
+        }
       >
         <source src={videoUrl} />
       </video>
