@@ -9,7 +9,7 @@ const App = () => {
   return (
     <div className='w-full h-screen bg-slate-400'>
       <Routes>
-        {/* <Route path="/" element={<Redirect />} />  */}
+        <Route path="/" element={<Redirect />} /> 
         <Route path="/login" element={<Login />} />
         <Route path="/form" element={<Form />} />
         <Route path="/video/:id" element={<Video/>} />
