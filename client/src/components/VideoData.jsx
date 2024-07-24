@@ -287,6 +287,16 @@ const VideoData = ({
     <div className="flex flex-col w-full h-full bg-slate-400 justify-center items-center overflow-y-scroll no-scrollbar">
       <Helmet>
         <title>Video for {name}</title>
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="player" />
+        <meta name="twitter:title" content={`Video for ${name}`}/>
+        <meta name="twitter:description" content={`Check out this personalized video for ${name}.`}/>
+        <meta name="twitter:image"  content={window.location.href}  />
+        <meta name="twitter:url"  content={window.location.href}  />
+        <meta name="twitter:player:width" content="640" />
+        <meta name="twitter:player:height" content="360" />
+
+        {/* Optional: Open Graph Meta Tags for better compatibility */}
         <meta property="og:title" content={`Video for ${name}`} />
         <meta
           property="og:description"
@@ -294,6 +304,9 @@ const VideoData = ({
         />
         <meta property="og:image" content={window.location.href} />
         <meta property="og:url" content={window.location.href} />
+        <meta property="og:video:width" content="640" />
+        <meta property="og:video:height" content="360" />
+
       </Helmet>
       <div className="h-[10%] flex flex-col w-full text-center justify-end">
         <span className="xs:text-base md:text-2xl xl:text-4xl h-full xs:w-full font-bold pt-9 z-10">
