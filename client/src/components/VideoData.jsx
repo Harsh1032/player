@@ -10,6 +10,7 @@ const VideoData = ({
   videoUrl,
   timeFullScreen,
   videoDuration,
+  image,
 }) => {
   const videoRef = useRef(null);
   const thumbnailImgRef = useRef(null);
@@ -30,7 +31,15 @@ const VideoData = ({
   const [isVideoFull, setIsVideoFull] = useState(false);
   const [showPlayButton, setShowPlayButton] = useState(true); // Manage play button visibility
   const [totalTime, setTotalTime] = useState(videoDuration);
+  const canvasRef = useRef(null);
 
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const overlayUrl = `http://localhost:8000/generate-image-overlay?imageUrl=${websiteUrl}&webcamImageUrl=${image}`;
+    setImageUrl(overlayUrl);
+  }, [websiteUrl, image]);
+  
   useEffect(() => {
     (async function () {
       try {
@@ -290,8 +299,10 @@ const VideoData = ({
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`Video for ${name}`}/>
+        <meta property="twitter:url" content={window.location.href}/>
+        <meta name="twitter:domain" content="agence-quasr.fr" />
         <meta name="twitter:description" content={`Check out this personalized video for ${name}.`}/>
-        <meta name="twitter:image"  content={`${process.env.PUBLIC_URL}/preview.png`}  />
+        <meta name="twitter:image"  content={imageUrl}  />
 
         {/* Optional: Open Graph Meta Tags for better compatibility */}
         <meta property="og:title" content={`Video for ${name}`} />
@@ -299,7 +310,7 @@ const VideoData = ({
           property="og:description"
           content={`Check out this personalized video for ${name}.`}
         />
-        <meta property="og:image" content={`${process.env.PUBLIC_URL}/preview.png`} />
+        <meta property="og:image" content={imageUrl}  />
         <meta property="og:url" content={window.location.href} />
 
       </Helmet>
@@ -313,7 +324,7 @@ const VideoData = ({
           <div
             className={`video-container paused ${
               isFullScreen ? "full-screen" : ""
-            } md:w-[85%] md:h-[75%] xs:h-[80%] xs:w-[100%] xl:w-[95%]`}
+            }  xs:w-[100%] xl:w-[95%]`}
             data-volume-level="high"
             ref={videoContainerRef}
           >
@@ -496,6 +507,12 @@ const VideoData = ({
           </div>
         </div>
       </div>
+      <canvas
+              ref={canvasRef}
+              width="500"
+              height="281"
+              style={{ display: 'none' }}
+            />
     </div>
   );
 };

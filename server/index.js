@@ -6,6 +6,11 @@ import cors from "cors";
 import path from "path";
 import Papa from "papaparse";
 import fs from "fs";
+import { createCanvas, loadImage } from "canvas";
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegPath from "ffmpeg-static";
+
+import axios from "axios";
 
 const app = express();
 
@@ -21,6 +26,7 @@ mongoose
   .then(() => console.log("database connected"))
   .catch((err) => console.log("database not connected", err));
 
+ffmpeg.setFfmpegPath(ffmpegPath);
 const __dirname = path.resolve();
 const downloadsPath = path.join(__dirname, "../client/build", "downloads");
 
@@ -36,7 +42,7 @@ const filePath = path.join(downloadsPath, fileName);
 const baseURL = process.env.BASE_URL;
 
 app.use(express.json());
-app.use(cors({ origin: baseURL }));
+app.use(cors());
 
 // Define video schema
 const videoSchema = new mongoose.Schema({
@@ -46,6 +52,7 @@ const videoSchema = new mongoose.Schema({
   videoUrl: String,
   timeFullScreen: Number,
   videoDuration: Number,
+  image: String,
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -55,6 +62,7 @@ const csvFileSchema = new mongoose.Schema({
   numberOfPages: Number,
   generatedAt: { type: Date, default: Date.now },
   downloadLink: String,
+  videoIds: [{ type: String, ref: "Video" }],
 });
 
 const CsvFile = mongoose.model("CsvFile", csvFileSchema);
@@ -65,29 +73,9 @@ app.get("/", (req, res) => {
   res.json("Hello");
 });
 
-app.get('/test-page', (req, res) => {
-  const title = req.query.title || 'Default Title';
-  const description = req.query.description || 'Default Description';
-
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>${title}</title>
-        <meta name="description" content="${description}">
-        <!-- Other meta tags -->
-      </head>
-      <body>
-        <h1>${title}</h1>
-        <p>${description}</p>
-      </body>
-    </html>
-  `);
-});
-
 // Generate unique video link
 app.post("/generate", async (req, res) => {
-  const { name, websiteUrl, videoUrl, timeFullScreen, videoDuration } =
+  const { name, websiteUrl, videoUrl, timeFullScreen, videoDuration, image } =
     req.body;
   const newVideo = new Video({
     name,
@@ -95,6 +83,7 @@ app.post("/generate", async (req, res) => {
     videoUrl,
     timeFullScreen,
     videoDuration,
+    image,
   });
   await newVideo.save();
   res.json({ link: `${baseURL}/video/${newVideo.id}` });
@@ -109,9 +98,11 @@ app.post("/generate-bulk", async (req, res) => {
       .status(400)
       .json({ error: "Invalid request format. Expected an array of videos." });
   }
-  const generatedLinks = await Promise.all(
+
+  // Save all videos and collect their IDs and generated links
+  const savedVideos = await Promise.all(
     videos.map(async (video) => {
-      const { name, websiteUrl, videoUrl, timeFullScreen, videoDuration } =
+      const { name, websiteUrl, videoUrl, timeFullScreen, videoDuration, image } =
         video;
       const newVideo = new Video({
         name,
@@ -119,10 +110,15 @@ app.post("/generate-bulk", async (req, res) => {
         videoUrl,
         timeFullScreen,
         videoDuration,
+        image,
       });
       await newVideo.save();
-      return `${baseURL}/video/${newVideo.id}`;
+      return newVideo;
     })
+  );
+
+  const generatedLinks = savedVideos.map(
+    (video) => `${baseURL}/video/${video.id}`
   );
 
   // Generate CSV file and save its information
@@ -154,6 +150,7 @@ app.post("/generate-bulk", async (req, res) => {
     fileName,
     numberOfPages: videos.length,
     downloadLink: `/downloads/${fileName}`,
+    videoIds: savedVideos.map((video) => video.id),
   });
   await newCsvFile.save();
 
@@ -203,11 +200,99 @@ app.delete("/video/:id", async (req, res) => {
 // Route to get all videos
 app.get("/videos", async (req, res) => {
   try {
-    const videos = await Video.find().sort({createdAt: -1});
+    const videos = await Video.find().sort({ createdAt: -1 });
     res.status(200).json(videos);
   } catch (error) {
     console.error("Error fetching videos:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.delete("/csv-files/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the CSV file document by ID
+    const csvFile = await CsvFile.findById(id);
+    if (!csvFile) {
+      return res.status(404).json({ error: "CSV file not found" });
+    }
+
+    // Retrieve the list of associated video IDs
+    const videoIds = csvFile.videoIds;
+
+    // Delete the associated videos from the database
+    await Video.deleteMany({ id: { $in: videoIds } });
+
+    // Delete the CSV file document from the database
+    await CsvFile.findByIdAndDelete(id);
+
+    // Optionally, delete the CSV file from the filesystem
+    const filePath = path.join(
+      __dirname,
+      "../client/build",
+      csvFile.downloadLink
+    );
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    res
+      .status(200)
+      .json({ message: "CSV file and associated videos deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting CSV file and associated videos:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/generate-image-overlay", async (req, res) => {
+  const { imageUrl, webcamImageUrl } = req.query;
+
+  if (!imageUrl || !webcamImageUrl) {
+    return res.status(400).send("imageUrl is required");
+  }
+
+  try {
+    const canvas = createCanvas(500, 281); // Size as per your requirements
+    const ctx = canvas.getContext("2d");
+
+    const baseImage = await loadImage(imageUrl);
+    ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+
+    const overlayImage = await loadImage(
+      "https://www.quasr.fr/wp-content/uploads/2024/07/overlay.png"
+    );
+    ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+
+    // Draw the circular webcam image
+    const webcamSize = 100;
+    const margin = 10;
+    const webcamX = canvas.width - webcamSize - margin;
+    const webcamY = canvas.height - webcamSize - margin;
+    // Create circular clipping path
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(
+      webcamX + webcamSize / 2,
+      webcamY + webcamSize / 2,
+      webcamSize / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.clip();
+
+    // Draw the webcam image within the circular clipping path
+    const webcamImage = await loadImage(webcamImageUrl);
+    ctx.drawImage(webcamImage, webcamX, webcamY, webcamSize, webcamSize);
+    ctx.restore(); // Restore the clipping path
+
+    const buffer = canvas.toBuffer("image/png");
+    res.set("Content-Type", "image/png");
+    res.send(buffer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error generating image");
   }
 });
 

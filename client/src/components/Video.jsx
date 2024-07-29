@@ -48,7 +48,7 @@ const Video = () => {
       </div>
     );
   }
-
+  console.log(formData)
   return (
     <div className="w-full h-full">
       {formData ? (
@@ -58,6 +58,7 @@ const Video = () => {
           videoUrl={formData.videoUrl}
           timeFullScreen={formData.timeFullScreen}
           videoDuration={formData.videoDuration}
+          image={formData.image}
         />
       ) : (
         <div className="flex justify-center items-center w-full h-full">

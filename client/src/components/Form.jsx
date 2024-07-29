@@ -12,6 +12,7 @@ const Form = () => {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [timeFullScreen, setTimeFullScreen] = useState("");
+  const [image, setImage] = useState("");
   const [videoDuration, setVideoDuration] = useState(null);
 
   const [mode, setMode] = useState("single"); // State to manage form mode
@@ -101,7 +102,7 @@ const Form = () => {
 
           const validRows = results.data.filter(
             (row) =>
-              row.name && row.websiteUrl && row.videoUrl && row.timeFullScreen
+              row.name && row.websiteUrl && row.videoUrl && row.timeFullScreen && row.image
           );
 
           const videos = validRows.map((row) => ({
@@ -109,7 +110,9 @@ const Form = () => {
             websiteUrl: row.websiteUrl,
             videoUrl: row.videoUrl,
             timeFullScreen: parseInt(row.timeFullScreen, 10),
+            image: row.image,
             videoDuration: null, // Will be set later
+            
           }));
 
           // Extract video durations
@@ -151,6 +154,7 @@ const Form = () => {
       videoUrl,
       timeFullScreen,
       videoDuration: duration,
+      image,
     };
 
     try {
@@ -244,6 +248,34 @@ const Form = () => {
     setMode(mode === "single" ? "bulk" : "single");
   };
 
+  //deleting csvFiles
+  const deleteCsvFile = async (id) => {
+    try {
+      const response = await fetch(`${baseURL}/csv-files/${id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("CSV file and associated videos deleted successfully.");
+        // Remove the deleted CSV file from the local state
+        setCsvFiles((prevCsvFiles) =>
+          prevCsvFiles.filter((file) => file._id !== id)
+        );
+
+        // Also remove the associated videos from the state
+        const updatedVideos = videos.filter(
+          (video) => video.csvFile !== id
+        );
+        setVideos(updatedVideos);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error deleting CSV file:", error);
+      toast.error("An error occurred while deleting the CSV file.");
+    }
+  };
+
   const renderVideos = (videoList) => {
     return videoList.map((video, index) => (
       <li key={video.id} className="flex items-center justify-between p-2">
@@ -260,7 +292,7 @@ const Form = () => {
 
   const renderCsvFiles = (csvFileList) => {
     return csvFileList.map((file, index) => (
-      <li key={index} className="flex items-center justify-between p-2">
+      <li key={file._id} className="flex items-center justify-between p-2">
         <span>{file.fileName}</span>
         <span>{file.numberOfPages}</span>
         <span>{new Date(file.generatedAt).toLocaleDateString()}</span>
@@ -271,6 +303,12 @@ const Form = () => {
         >
           Download
         </a>
+        <button
+          onClick={() => deleteCsvFile(file._id)}
+          className="p-1 bg-red-500 hover:bg-red-400 text-white rounded ml-2"
+        >
+          <FaTrashAlt />
+        </button>
       </li>
     ));
   };
@@ -322,6 +360,14 @@ const Form = () => {
               className="lg:w-[50%] h-[10%] xs:w-[80%] rounded-lg p-2 bg-white text-center border border-black"
               value={timeFullScreen}
               onChange={(e) => setTimeFullScreen(e.target.value)}
+            />
+            <input
+              type="url"
+              placeholder="Set Image URL"
+              required
+              className="lg:w-[50%] h-[10%] xs:w-[80%] rounded-lg p-2 bg-white text-center border border-black"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
             />
             <button
               type="submit"
