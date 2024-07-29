@@ -35,8 +35,11 @@ const VideoData = ({
 
   const [imageUrl, setImageUrl] = useState('');
 
+  
+  const baseURL = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
-    const overlayUrl = `http://localhost:8000/generate-image-overlay?imageUrl=${websiteUrl}&webcamImageUrl=${image}`;
+    const overlayUrl = `${baseURL}/generate-image-overlay?imageUrl=${websiteUrl}&webcamImageUrl=${image}`;
     setImageUrl(overlayUrl);
   }, [websiteUrl, image]);
   
