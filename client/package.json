@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "ajv": "^6.12.6",
     "ajv-keywords": "^3.5.2",
+    "axios": "^1.7.2",
     "canvas": "^2.11.2",
     "html2canvas": "^1.4.1",
     "papaparse": "^5.4.1",

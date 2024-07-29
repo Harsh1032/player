@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuth } from './AuthContext';
 
 const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmission = (e) => {
     e.preventDefault();
     if (password === "Harsh123!") {
+      login();
       navigate('/form');
       setPassword('');
     } else {

@@ -268,7 +268,7 @@ app.get("/generate-image-overlay", async (req, res) => {
     // Draw the circular webcam image
     const webcamSize = 100;
     const margin = 10;
-    const webcamX = canvas.width - webcamSize - margin;
+    const webcamX = margin;
     const webcamY = canvas.height - webcamSize - margin;
     // Create circular clipping path
     ctx.save();

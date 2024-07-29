@@ -14,7 +14,7 @@ const Form = () => {
   const [timeFullScreen, setTimeFullScreen] = useState("");
   const [image, setImage] = useState("");
   const [videoDuration, setVideoDuration] = useState(null);
-
+  const [uploadStatus, setUploadStatus] = useState(""); // State to manage upload status
   const [mode, setMode] = useState("single"); // State to manage form mode
   const [csvFile, setCsvFile] = useState(null); // State to manage CSV file
 
@@ -46,8 +46,6 @@ const Form = () => {
       console.error("Error fetching CSV files:", error);
     }
   };
-
-  console.log(csvFiles);
   // for fetching videos
   const fetchVideos = async () => {
     try {
@@ -94,6 +92,8 @@ const Form = () => {
         return;
       }
 
+      setUploadStatus("Uploading...");
+
       Papa.parse(csvFile, {
         header: true,
         skipEmptyLines: true, // Skip empty rows
@@ -120,11 +120,9 @@ const Form = () => {
             video.videoDuration = await getVideoDuration(video.videoUrl);
           }
 
-          console.log("Videos to Submit: ", videos); // Debugging line
-
           // Submit bulk data
           await submitBulkData(videos, csvFile.name);
-
+          setUploadStatus(""); 
           setCsvFile(null); // Clear the csvFile state
           if (fileInputRef.current) {
             fileInputRef.current.value = null; // Clear the file input
@@ -390,7 +388,7 @@ const Form = () => {
               type="submit"
               className="w-[100px] h-[40px] rounded-lg p-2 mt-5 bg-indigo-600 hover:bg-indigo-500 text-white"
             >
-              Upload CSV
+               {uploadStatus ? uploadStatus : "Upload CSV"}
             </button>
           </>
         )}
